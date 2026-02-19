@@ -1,0 +1,35 @@
+{
+  "name": "certificate-microservice",
+  "version": "1.0.0",
+  "description": "Excel-driven certificate issuance and verification microservice",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "lint": "echo 'No linter configured'",
+    "check": "node --check src/server.js",
+    "prisma:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.699.0",
+    "@aws-sdk/s3-request-presigner": "^3.699.0",
+    "@prisma/client": "^5.22.0",
+    "bullmq": "^5.12.9",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "multer": "^1.4.5-lts.1",
+    "qrcode": "^1.5.4",
+    "uuid": "^11.0.3",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8",
+    "puppeteer": "^23.5.3",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "prisma": "^5.22.0"
+  }
+}
