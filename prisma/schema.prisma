@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CertificateStatus {
+  valid
+  revoked
+}
+
+enum BatchStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+model Template {
+  id               String   @id @default(uuid())
+  templateCode     String   @unique
+  name             String
+  description      String?
+  htmlTemplateName String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  certificates     Certificate[]
+  rules            TemplateRule[]
+}
+
+model TemplateRule {
+  id           String   @id @default(uuid())
+  eventType    String
+  minScore     Float?
+  maxScore     Float?
+  priority     Int      @default(1)
+  description  String?
+  templateId   String
+  template     Template @relation(fields: [templateId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([eventType, priority])
+}
+
+model CertificateSequence {
+  id           String   @id @default(uuid())
+  year         Int
+  templateCode String
+  currentValue Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([year, templateCode])
+}
+
+model Batch {
+  id            String      @id @default(uuid())
+  fileName      String
+  totalRows     Int         @default(0)
+  processedRows Int         @default(0)
+  successCount  Int         @default(0)
+  failCount     Int         @default(0)
+  status        BatchStatus @default(pending)
+  errorSummary  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  rowErrors     BatchRowError[]
+  certificates  Certificate[]
+}
+
+model BatchRowError {
+  id         String   @id @default(uuid())
+  batchId    String
+  batch      Batch    @relation(fields: [batchId], references: [id])
+  rowNumber  Int
+  rowData    Json
+  errorCode  String
+  message    String
+  createdAt  DateTime @default(now())
+
+  @@index([batchId, rowNumber])
+}
+
+model Certificate {
+  id            String            @id @default(uuid())
+  certificateId String            @unique
+  userName      String
+  userEmail     String
+  eventType     String
+  eventName     String?
+  score         Float?
+  extraData     Json?
+  pdfUrl        String
+  verifyUrl     String
+  status        CertificateStatus @default(valid)
+  issuedAt      DateTime          @default(now())
+  revokedAt     DateTime?
+  revokeReason  String?
+  templateId    String
+  template      Template          @relation(fields: [templateId], references: [id])
+  batchId       String?
+  batch         Batch?            @relation(fields: [batchId], references: [id])
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([certificateId])
+  @@index([userEmail])
+  @@index([status])
+}
